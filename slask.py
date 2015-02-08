@@ -48,7 +48,7 @@ def init_plugins(plugindir):
                 hooks.setdefault(hook, []).append(hookfun)
 
             if mod.__doc__:
-                firstline = mod.__doc__.split('\n')[0]
+                firstline = mod.__doc__
                 hooks.setdefault('help', {})[modname] = firstline
                 hooks.setdefault('extendedhelp', {})[modname] = mod.__doc__
 
@@ -73,17 +73,18 @@ def handle_message(client, event, hooks, config):
     # ignore bot messages and edits
     subtype = event.get("subtype", "")
     if subtype == "bot_message" or subtype == "message_changed": return
-
+    
     botname = client.server.login_data["self"]["name"]
     try:
         msguser = client.server.users.get(event["user"])
+        event["user"] = client.server.users.get(event["user"])
     except KeyError:
         logging.debug("event {0} has no user".format(event))
         return
 
     if msguser["name"] == botname or msguser["name"].lower() == "slackbot":
         return
-
+    
     return "\n".join(run_hook(hooks, "message", event, {"client": client, "config": config, "hooks": hooks}))
 
 event_handlers = {
